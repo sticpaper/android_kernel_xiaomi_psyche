@@ -26,9 +26,17 @@
 static const int cfq_quantum = 8;
 static const u64 cfq_fifo_expire[2] = { NSEC_PER_SEC / 4, NSEC_PER_SEC / 8 };
 /* maximum backwards seek, in KiB */
-static const int cfq_back_max = 16 * 1024;
+#ifdef CONFIG_SSD_OPT
+static const int cfq_back_max = 16 * 256; /* 4096 */
+#else
+static const int cfq_back_max = 16 * 1024; /* 16384 */
+#endif
 /* penalty of a backwards seek */
+#ifdef CONFIG_SSD_OPT
+static const int cfq_back_penalty = 1;
+#else
 static const int cfq_back_penalty = 2;
+#endif
 static const u64 cfq_slice_sync = NSEC_PER_SEC / 10;
 static u64 cfq_slice_async = NSEC_PER_SEC / 25;
 static const int cfq_slice_async_rq = 2;
