@@ -27,7 +27,9 @@
 
 #define ENABLE_OIS_EIS
 #define OIS_DATA_ADDR 0x8A
+#ifndef CONFIG_PSYCHE_OIS
 #define OIS_TELE_DATA_ADDR 0x1100
+#endif
 
 enum cam_ois_state {
 	CAM_OIS_INIT,
@@ -91,11 +93,13 @@ struct ois_data_eis_t {
     uint8_t  data[52];
 };
 
+#ifndef CONFIG_PSYCHE_OIS
 struct ois_tele_data_eis_t {
     uint64_t data_timestamp;
     uint8_t  data[48];
 };
-#endif
+#endif /* CONFIG_PSYCHE_OIS */
+#endif /* ENABLE_OIS_EIS */
 /**
  * struct cam_ois_ctrl_t - OIS ctrl private data
  * @device_name     :   ois device_name
@@ -142,8 +146,10 @@ struct cam_ois_ctrl_t {
 	uint8_t is_ois_pre_init;
 #ifdef ENABLE_OIS_EIS
     struct ois_data_eis_t ois_data;
+#ifndef CONFIG_PSYCHE_OIS
     struct ois_tele_data_eis_t ois_tele_data;
-#endif
+#endif /* CONFIG_PSYCHE_OIS */
+#endif /* ENABLE_OIS_EIS */
 };
 
 #endif /*_CAM_OIS_DEV_H_ */

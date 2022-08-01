@@ -167,12 +167,20 @@ enum cam_eeprom_packet_opcodes {
 	CAM_EEPROM_WRITE
 };
 
+#ifdef CONFIG_PSYCHE_OIS
+enum cam_ois_packet_opcodes {
+	CAM_OIS_PACKET_OPCODE_INIT,
+	CAM_OIS_PACKET_OPCODE_OIS_CONTROL,
+	CAM_OIS_PACKET_OPCODE_OIS_GETDATA
+};
+#else
 enum cam_ois_packet_opcodes {
 	CAM_OIS_PACKET_OPCODE_INIT,
 	CAM_OIS_PACKET_OPCODE_OIS_CONTROL,
 	CAM_OIS_PACKET_OPCODE_OIS_GETDATA,
 	CAM_OIS_PACKET_OPCODE_TELEOIS_GETDATA
 };
+#endif
 
 enum msm_bus_perf_setting {
 	S_INIT,

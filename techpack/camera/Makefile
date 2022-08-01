@@ -28,6 +28,15 @@ LINUXINCLUDE    += \
 		-include $(srctree)/techpack/camera/config/bengalcameraconf.h
 endif
 
+ifeq ($(CONFIG_MACH_XIAOMI_PSYCHE), y)
+include $(srctree)/techpack/camera/config/psychecamera.conf
+endif
+
+ifeq ($(CONFIG_MACH_XIAOMI_PSYCHE), y)
+LINUXINCLUDE    += \
+		-include $(srctree)/techpack/camera/config/psychecameraconf.h
+endif
+
 ifdef CONFIG_SPECTRA_CAMERA
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE     += \

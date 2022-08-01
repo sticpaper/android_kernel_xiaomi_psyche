@@ -14,11 +14,13 @@
 #include "cam_res_mgr_api.h"
 #include "cam_common_util.h"
 #include "cam_packet_util.h"
+#ifndef CONFIG_PSYCHE_OIS
 #include <linux/vmalloc.h>
 #include "Sem1215.h"
 
 static int oisfwctrl;
 module_param(oisfwctrl, int, 0644);
+#endif
 
 int32_t cam_ois_construct_default_power_setting(
 	struct cam_sensor_power_ctrl_t *power_info)
@@ -805,7 +807,7 @@ release_firmware:
 
 }
 
-
+#ifndef CONFIG_PSYCHE_OIS
 static int cam_sem1215_ois_fw_download(struct cam_ois_ctrl_t *o_ctrl)
 {
 	uint8_t txdata[TX_BUFFER_SIZE];
@@ -930,6 +932,7 @@ static int cam_sem1215_ois_fw_download(struct cam_ois_ctrl_t *o_ctrl)
 	}
 	return rc;
 }
+#endif
 
 #ifdef ENABLE_OIS_EIS
 static int cam_ois_get_data(struct cam_ois_ctrl_t *o_ctrl,
@@ -1023,6 +1026,7 @@ static int cam_ois_get_data(struct cam_ois_ctrl_t *o_ctrl,
 	return rc;
 }
 
+#ifndef CONFIG_PSYCHE_OIS
 static int cam_tele_ois_get_data(struct cam_ois_ctrl_t *o_ctrl,
         struct cam_packet *csl_packet)
 {
@@ -1103,8 +1107,9 @@ static int cam_tele_ois_get_data(struct cam_ois_ctrl_t *o_ctrl,
 
     return rc;
 }
+#endif /* CONFIG_PSYCHE_OIS */
 
-#endif
+#endif /* ENABLE_OIS_EIS */
 
 /**
  * cam_ois_pkt_parse - Parse csl packet
@@ -1303,6 +1308,21 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 			}
 		}
 
+#ifdef CONFIG_PSYCHE_OIS
+		if (o_ctrl->ois_fw_flag) {
+			if(o_ctrl->opcode.is_addr_indata) {
+				CAM_DBG(CAM_OIS, "apply lc898124 ois_fw settings");
+				rc = cam_lc898124_ois_fw_download(o_ctrl);
+			} else {
+				CAM_DBG(CAM_OIS, "apply ois_fw settings");
+				rc = cam_ois_fw_download(o_ctrl);
+			}
+			if (rc) {
+				CAM_ERR(CAM_OIS, "Failed OIS FW Download");
+				goto pwr_dwn;
+			}
+		}
+#else
 		if (o_ctrl->ois_fw_flag) {
 			CAM_DBG(CAM_OIS, "is_addr_indata = %d", o_ctrl->opcode.is_addr_indata);
 			if(o_ctrl->opcode.is_addr_indata == 121){
@@ -1321,6 +1341,7 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 				goto pwr_dwn;
 			}
 		}
+#endif
 
 		CAM_DBG(CAM_OIS, "apply init settings");
 		rc = cam_ois_apply_settings(o_ctrl, &o_ctrl->i2c_init_data);
@@ -1421,6 +1442,7 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 		}
 		break;
 
+#ifndef CONFIG_PSYCHE_OIS
         case CAM_OIS_PACKET_OPCODE_TELEOIS_GETDATA:
                 if (o_ctrl->cam_ois_state < CAM_OIS_CONFIG) {
                     rc = -EINVAL;
@@ -1436,7 +1458,8 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
                     return rc;
                 }
                 break;
-#endif
+#endif /* CONFIG_PSYCHE_OIS */
+#endif /* ENABLE_OIS_EIS */
 	default:
 		CAM_ERR(CAM_OIS, "Invalid Opcode: %d",
 			(csl_packet->header.op_code & 0xFFFFFF));
